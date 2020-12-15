@@ -1,61 +1,54 @@
 import os
-import urllib.request
+from flask import Flask, render_template, request
+import cv2 as cv
+import argparse
+import sys
+import numpy as np
+import os.path
+from detect import * 
 
-# from app import app
-from flask import Flask, flash, request, redirect, render_template, send_file, url_for
-from werkzeug.utils import secure_filename
-from flask import Flask
-from NUMBER-PLATE-RECOGNITION import main as detect
-import logging
-
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
-
-UPLOAD_FOLDER = './static'
+UPLOAD_FOLDER = './static/uploads/'
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask(__name__)
-app.secret_key = "secret key"
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
-
-ALLOWED_EXTENSIONS = set(['jpg','png', 'jpeg'])
-file_path = ''
 
 
 def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 @app.route('/')
-def index():
-    return render_template('index.html')
+def home_page():
+    return render_template('upload.html')
 
 
-@app.route('/', methods=['POST', 'GET'])
-def lca_file():
+@app.route('/upload', methods=['GET', 'POST'])
+def upload_page():
     if request.method == 'POST':
-        # print("got post")
-    # check if the post request has the file part
+        # check if the post request has the file part
         if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
+            return render_template('upload.html', msg='No file selected')
         file = request.files['file']
+        # if user does not select file, browser also
+        # submit a empty part without filename
         if file.filename == '':
-            flash('No file selected for uploading')
-            return redirect(request.url)
+            return render_template('upload.html', msg='No file selected')
+
         if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            flash('File successfully uploaded')
-            file_path = os.path.join(
-                app.config['UPLOAD_FOLDER']+'/' + filename)
-            # print("file uploaded")
-            detect(file_path)
-            # print("displaying")
+            file.save(os.path.join(os.getcwd() + UPLOAD_FOLDER, file.filename))
+            print(file.filename)
+            # call the OCR function on it
+            extracted_text = main(file)
+            print(extracted_text)
 
-            return render_template('results.html')
-        else:
-            flash('Allowed file types are of the format csv')
-            return redirect(request.url)
+            # extract the text and display it
+            return render_template('upload.html',
+                                   msg='Successfully processed',
+                                   extracted_text=extracted_text,
+                                   img_src=UPLOAD_FOLDER + extracted_text)
+    elif request.method == 'GET':
+        return render_template('upload.html')
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(debug=True)
