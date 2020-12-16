@@ -1,22 +1,35 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Upload Image</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Number Plate Detection</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+        integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous" />
+    
   </head>
   <body>
-
+    <nav class="navbar navbar-light bg-light" style="background-color: #351C75 !important;">
+      <span class="navbar-brand mb-0 h1" style="color: white;font-size: x-large;font-style: bold;">Number Plate Detector</span>
+      <br>
+      <br>
+  </nav>
+<br>
+<br>
+  <div align="center">
     {% if msg %}
-    <h1>{{ msg }}</h1>
+    <h3>{{ msg }}</h3>
     {% endif %}
     
-    <h1>Upload new File</h1>
+    <h3>Upload new File</h3>
     
-    <form method=post enctype=multipart/form-data>
+    <form method=post enctype=multipart/form-data action="{{ url_for('upload_page')}}">
       <p><input type=file name=file>
          <input type=submit value=Upload>
     </form>
 
-    <h1>Result:</h1>
+    <h3>Result:</h3>
     {% if img_src %}
       <img src="{{ img_src }}">
     {% endif %}
@@ -27,5 +40,9 @@
     {% else %}
       The extracted text will be displayed here
     {% endif %}
+
+  </div>
+
+    
   </body>
 </html>

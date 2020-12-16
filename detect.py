@@ -4,10 +4,10 @@ import cv2
 from copy import deepcopy
 from PIL import Image
 import pytesseract as tess
-tess.pytesseract.tesseract_cmd = 'C:\Program Files\Tesseract-OCR\Tesseract.exe'
+# comment out the below line if working with Windows
+# tess.pytesseract.tesseract_cmd = 'C:\Program Files\Tesseract-OCR\Tesseract.exe'
 
 def preprocess(img):
-	cv2.imshow("Input",img)
 	imgBlurred = cv2.GaussianBlur(img, (5,5), 0)
 	gray = cv2.cvtColor(imgBlurred, cv2.COLOR_BGR2GRAY)
 	sobelx = cv2.Sobel(gray,cv2.CV_8U,1,0,ksize=3)
@@ -44,7 +44,6 @@ def extract_contours(threshold_img):
 	element = cv2.getStructuringElement(shape=cv2.MORPH_RECT, ksize=(17, 3))
 	morph_img_threshold = threshold_img.copy()
 	cv2.morphologyEx(src=threshold_img, op=cv2.MORPH_CLOSE, kernel=element, dst=morph_img_threshold)
-	cv2.imshow("Morphed",morph_img_threshold)
 
 	contours, hierarchy= cv2.findContours(morph_img_threshold,mode=cv2.RETR_EXTERNAL,method=cv2.CHAIN_APPROX_NONE)
 	return contours
@@ -113,20 +112,18 @@ def cleanAndRead(img,contours):
 				if rect:
 					x1,y1,w1,h1 = rect
 					x,y,w,h = x+x1,y+y1,w1,h1
-					cv2.imshow("Cleaned Plate",clean_plate)
 					plate_im = Image.fromarray(clean_plate)
 					text = tess.image_to_string(plate_im, lang='eng')
 					print("Detected Text : ",text)
-					img = cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
-					cv2.imshow("Detected Plate",img)
+					return text
 
 
-
-if __name__ == '__main__':
+def detect(path):
 	print( "DETECTING PLATE . . .")
 
-	img = cv2.imread("testData/test.jpeg")
+	img = cv2.imread(path)
 	threshold_img = preprocess(img)
 	contours= extract_contours(threshold_img)
 
-	cleanAndRead(img,contours)
+	return cleanAndRead(img,contours)
+	

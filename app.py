@@ -7,8 +7,10 @@ import numpy as np
 import os.path
 from detect import * 
 
-UPLOAD_FOLDER = './static/uploads/'
+UPLOAD_FOLDER = '//static//uploads//'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
+
+
 
 app = Flask(__name__)
 
@@ -36,17 +38,18 @@ def upload_page():
             return render_template('upload.html', msg='No file selected')
 
         if file and allowed_file(file.filename):
-            file.save(os.path.join(os.getcwd() + UPLOAD_FOLDER, file.filename))
+            file_path = os.path.join(os.getcwd() + UPLOAD_FOLDER, file.filename);
+            file.save(file_path)
             print(file.filename)
             # call the OCR function on it
-            extracted_text = main(file)
+            extracted_text = detect(file_path)
             print(extracted_text)
 
             # extract the text and display it
-            return render_template('upload.html',
+            return render_template('upload.html', 
                                    msg='Successfully processed',
                                    extracted_text=extracted_text,
-                                   img_src=UPLOAD_FOLDER + extracted_text)
+                                   img_src='/static/uploads/'+file.filename)
     elif request.method == 'GET':
         return render_template('upload.html')
 
